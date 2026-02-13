@@ -7,9 +7,9 @@ import { ENV } from "./config/env.js";
 const app=express();
 const PORT=ENV.PORT;
 
-if(ENV.NODE_ENV==="production"){
-    job.start();
-}
+// if(ENV.NODE_ENV==="production"){
+//     job.start();
+// }
 app.use(express.json());
 app.get("/api/health",(req,res)=>{
     res.status(200).json({success:true});
