@@ -681,6 +681,9 @@ const Index = () => {
             style={({ pressed }) => ({
               backgroundColor: pressed ? '#374151' : '#111827',
             })}
+             onPress={() => {
+    
+  }}
           >
             <Text className="text-white text-sm font-semibold mr-1">Contact Us</Text>
             <MaterialIcons name="arrow-forward" size={14} color="white" />
