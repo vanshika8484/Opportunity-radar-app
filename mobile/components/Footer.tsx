@@ -10,9 +10,9 @@ const Footer = () => {
 
   return (
     <View className="bg-gray-900 border-t border-gray-800">
-      <View className="px-5 py-10  mx-auto">
+      <View className="px-5 py-5  mx-auto">
         {/* Logo and Title */}
-        <View className="flex-row items-center justify-center mb-4">
+        <View className="flex-row items-center justify-center">
           <View className="h-10 w-10 bg-indigo-500 rounded-full items-center justify-center">
             <Text className="text-white font-bold text-sm">OR</Text>
           </View>
@@ -22,7 +22,7 @@ const Footer = () => {
         </View>
 
         {/* Copyright */}
-        <Text className="text-sm text-gray-500 text-center mb-4">
+        <Text className="text-sm text-gray-500 text-center mb-2">
           © 2025 Opportunity Radar —{' '}
           <Text 
             className="text-gray-400"
