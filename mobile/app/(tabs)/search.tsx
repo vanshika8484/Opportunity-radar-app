@@ -244,7 +244,7 @@ const JobSearch: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#9cbbeeff" />
+      {/* <StatusBar barStyle="dark-content" backgroundColor="#9cbbeeff" /> */}
       <View style={styles.container}>
         {/* Search Bar */}
         <View style={styles.searchBar}>
