@@ -5,6 +5,10 @@ import { Platform } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import { StatusBar } from "expo-status-bar";
 import SafeScreen from "@/components/SafeScreen";
+import { ClerkProvider } from '@clerk/clerk-expo'
+import { tokenCache } from '@clerk/clerk-expo/token-cache'
+
+
 import "./global.css";
 
 export default function RootLayout() {
@@ -25,9 +29,11 @@ export default function RootLayout() {
   return (
     <>
       <StatusBar style="auto" translucent />
-      <SafeScreen>
+      <ClerkProvider tokenCache={tokenCache}>
+     <SafeScreen>
         <Slot />
-      </SafeScreen>
+     </SafeScreen>
+     </ClerkProvider>
     </>
   );
 }
