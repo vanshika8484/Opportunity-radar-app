@@ -1,0 +1,1 @@
+export const API_URL="https://opportunity-radar-app.onrender.com/api";

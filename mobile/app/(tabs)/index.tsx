@@ -1138,32 +1138,7 @@ const Index = () => {
     router.push('/search');
   };
 
-  // Sign Out Handler
-  const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              router.replace('/(auth)/sign-in');
-            } catch (error) {
-              console.error('Sign out error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
-          },
-        },
-      ]
-    );
-  };
+  
 
   return (
     <ScrollView 
@@ -1201,30 +1176,6 @@ const Index = () => {
               <MaterialIcons name="arrow-forward" size={14} color="white" />
             </Pressable>
 
-            {/* Sign Out / Sign In Button */}
-            {isSignedIn ? (
-              <Pressable 
-                className="flex-row items-center bg-red-500 py-2 px-3 rounded-full"
-                style={({ pressed }) => ({
-                  backgroundColor: pressed ? '#2651dcff' : '#4480efff',
-                })}
-                onPress={handleSignOut}
-              >
-                <MaterialIcons name="logout" size={14} color="white" />
-                <Text className="text-white text-sm font-semibold ml-1">Sign Out</Text>
-              </Pressable>
-            ) : (
-              <Pressable 
-                className="flex-row items-center bg-indigo-600 py-2 px-3 rounded-full"
-                style={({ pressed }) => ({
-                  backgroundColor: pressed ? '#4338ca' : '#4f46e5',
-                })}
-                onPress={() => router.push('/(auth)/sign-in')}
-              >
-                <MaterialIcons name="login" size={14} color="white" />
-                <Text className="text-white text-sm font-semibold ml-1">Sign In</Text>
-              </Pressable>
-            )}
           </View>
         </View>
       </View>
@@ -1397,14 +1348,17 @@ const Index = () => {
               <Text className="text-white font-bold text-lg">Get Started</Text>
             </Pressable>
             
-            <Pressable  className="border-2 bg-gray-400 border-white py-2 px-5 rounded-full flex-row items-center"
-               style={({ pressed }) => ({
-                backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)'
-               })}>
-           
-              <Text className="text-white font-extrabold text-sm">Mock Interview</Text>
-                <MaterialIcons name="arrow-forward" size={14} color="white" />
-            </Pressable>
+           {/* In your Index.tsx, update the Mock Interview button */}
+<Pressable 
+  className="border-2 bg-gray-400 border-white py-2 px-5 rounded-full flex-row items-center"
+  style={({ pressed }) => ({
+    backgroundColor: pressed ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.05)'
+  })}
+  onPress={() => router.push('/mock-interview')}  // Add this line
+>
+  <Text className="text-white font-extrabold text-sm">Mock Interview</Text>
+  <MaterialIcons name="arrow-forward" size={14} color="white" />
+</Pressable>
           </View>
         </View>
       </ImageBackground>
@@ -1424,6 +1378,7 @@ const Index = () => {
               img: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=600&h=300&fit=crop&q=80",
             },
             {
+
               title: "Industry Trends",
               desc: "Stay one step ahead with real-time insights into emerging industries.",
               img: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=300&fit=crop&q=80",
