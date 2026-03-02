@@ -1,4 +1,4 @@
-// // src/screens/JobSearch.tsx
+
 // import React, { useState, useEffect, useCallback } from 'react';
 // import {
 //   View,
@@ -11,11 +11,14 @@
 //   ActivityIndicator,
 //   FlatList,
 //   SafeAreaView,
-//   StatusBar,
+//   Alert,
 //   ImageSourcePropType,
 //   ListRenderItem,
 // } from 'react-native';
 // import { Picker } from '@react-native-picker/picker';
+// import { Ionicons } from '@expo/vector-icons';
+// import { useUser } from '@clerk/clerk-expo';
+// import { API_URL } from '../../constants/api';
 
 // // --- TYPE DEFINITIONS ---
 // interface NormalizedJob {
@@ -30,6 +33,7 @@
 //   platformName: string;
 //   logoUrl: string | ImageSourcePropType;
 //   isLocalImage: boolean;
+//   isSaved?: boolean; // NEW: Track if job is saved
 // }
 
 // interface Platform {
@@ -49,7 +53,6 @@
 // // --- CONFIGURATION ---
 // const JSEARCH_API_KEY = '89b382883emshcc0b0cd30db5786p11bf3cjsnfd425adf5d8a';
 
-// // For local images, use require
 // const remotiveLogo: ImageSourcePropType = require('../../assets/images/joblogo.png');
 
 // const platforms: PlatformsConfig = {
@@ -126,13 +129,47 @@
 // };
 
 // const JobSearch: React.FC = () => {
+//   const { user } = useUser();
 //   const [whatQuery, setWhatQuery] = useState<string>('');
 //   const [whereQuery, setWhereQuery] = useState<string>('');
 //   const [jobType, setJobType] = useState<string>('');
 //   const [jobs, setJobs] = useState<DisplayJob[]>([]);
+//   const [savedJobIds, setSavedJobIds] = useState<Set<string | number>>(new Set());
 //   const [statusMessage, setStatusMessage] = useState<string>('');
 //   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+//   // NEW: Fetch saved job IDs on mount
+//   useEffect(() => {
+//     if (user?.id) {
+//       fetchSavedJobIds();
+//     }
+//   }, [user?.id]);
+
+// const fetchSavedJobIds = async (): Promise<void> => {
+//   if (!user?.id) return;
+
+//   try {
+//     const userEmail = user.primaryEmailAddress?.emailAddress;
+//     const userName = user.fullName || user.firstName || 'User';
+
+//     if (!userEmail) return;
+
+//     // ✅ FIXED: Match backend route
+//     const response = await fetch(
+//       `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
+//     );
+    
+//     if (response.ok) {
+//       const savedJobs = await response.json();
+//       // Note: Your backend doesn't store jobId, only jobTitle
+//       // You'll need to update this logic or change the backend
+//       const ids = new Set(savedJobs.map((job: any) => job.jobTitle));
+//       setSavedJobIds(ids as Set<string | number>);
+//     }
+//   } catch (error) {
+//     console.error('Error fetching saved jobs:', error);
+//   }
+// };
 //   const fetchJobs = useCallback(async (what: string, where: string): Promise<void> => {
 //     if (!what.trim()) {
 //       setStatusMessage("Please enter what you're looking for.");
@@ -157,6 +194,7 @@
 //             platformName: platform.name,
 //             logoUrl: platform.logoUrl,
 //             isLocalImage: platform.isLocalImage || false,
+//             isSaved: savedJobIds.has(platform.normalizeFunction(job).id), // Check if saved
 //           }));
 //         })
 //         .catch((error: Error) => {
@@ -177,11 +215,13 @@
 //       setJobs(shuffledJobs);
 //       setStatusMessage(`Showing ${shuffledJobs.length} combined results...`);
 //     }
-//   }, []);
+//   }, [savedJobIds]);
 
 //   useEffect(() => {
-//     fetchJobs('developer', 'remote');
-//   }, [fetchJobs]);
+//     if (savedJobIds.size >= 0) {
+//       fetchJobs('developer', 'remote');
+//     }
+//   }, [savedJobIds]);
 
 //   const handleSearchSubmit = (): void => {
 //     const finalSearchTerm = jobType ? `${jobType} ${whatQuery}` : whatQuery;
@@ -196,10 +236,89 @@
 //     }
 //   };
 
+// const handleToggleSave = async (job: DisplayJob): Promise<void> => {
+//   if (!user?.id) {
+//     Alert.alert('Login Required', 'Please login to save jobs');
+//     return;
+//   }
+
+//   // Get user email from Clerk
+//   const userEmail = user.primaryEmailAddress?.emailAddress;
+//   const userName = user.fullName || user.firstName || 'User';
+
+//   if (!userEmail) {
+//     Alert.alert('Error', 'User email not found');
+//     return;
+//   }
+
+//   const isSaved = savedJobIds.has(job.id);
+//   const method = isSaved ? 'DELETE' : 'POST';
+  
+//   // ✅ FIXED: Match backend endpoint structure
+//   const endpoint = isSaved 
+//     ? `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
+//     : `${API_URL}/favorites`;
+
+//   try {
+//     const response = await fetch(endpoint, {
+//       method,
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       // ✅ FIXED: Send fields that backend expects
+//       body: method === 'POST' ? JSON.stringify({
+//         name: userName,
+//         email: userEmail,
+//         jobTitle: job.title, // Backend expects 'jobTitle' not 'title'
+//       }) : undefined,
+//     });
+
+//     if (!response.ok) {
+//       const errorText = await response.text();
+//       throw new Error(`Server error: ${response.status} - ${errorText}`);
+//     }
+
+//     const newSavedIds = new Set(savedJobIds);
+//     if (isSaved) {
+//       newSavedIds.delete(job.id);
+//     } else {
+//       newSavedIds.add(job.id);
+//     }
+//     setSavedJobIds(newSavedIds);
+
+//     setJobs(prevJobs =>
+//       prevJobs.map(j =>
+//         j.id === job.id ? { ...j, isSaved: !isSaved } : j
+//       )
+//     );
+
+//     Alert.alert(
+//       'Success',
+//       isSaved ? 'Job removed from saved' : 'Job saved successfully'
+//     );
+//   } catch (error) {
+//     console.error('Error toggling save:', error);
+//     Alert.alert('Error', `Failed to save job: ${error}`);
+//   }
+// };
 //   const renderJobItem: ListRenderItem<DisplayJob> = ({ item: job }) => (
 //     <View style={styles.jobCard}>
 //       <View style={styles.jobContent}>
-//         <Text style={styles.jobTitle}>{job.title}</Text>
+//         <View style={styles.jobHeader}>
+//           <Text style={styles.jobTitle}>{job.title}</Text>
+//           {/* NEW: Save/Unsave Button */}
+//           <TouchableOpacity
+//             onPress={() => handleToggleSave(job)}
+//             style={styles.saveButton}
+//           >
+//             <Ionicons
+//               name={job.isSaved ? 'bookmark' : 'bookmark-outline'}
+//               size={24}
+//               color={job.isSaved ? '#2b45b9ff' : '#666'}
+//             />
+//           </TouchableOpacity>
+//         </View>
+
 //         <View style={styles.jobInfoRow}>
 //           <Text style={styles.jobLabel}>Company: </Text>
 //           <Text style={styles.jobValue}>{job.company}</Text>
@@ -244,7 +363,6 @@
 
 //   return (
 //     <SafeAreaView style={styles.safeArea}>
-//       {/* <StatusBar barStyle="dark-content" backgroundColor="#9cbbeeff" /> */}
 //       <View style={styles.container}>
 //         {/* Search Bar */}
 //         <View style={styles.searchBar}>
@@ -375,7 +493,7 @@
 //     textAlign: 'center',
 //     fontSize: 16,
 //     paddingVertical: 10,
-//     paddingBottom:15,
+//     paddingBottom: 15,
 //     color: '#555',
 //   },
 //   loader: {
@@ -403,11 +521,23 @@
 //   jobContent: {
 //     marginBottom: 15,
 //   },
+//   // NEW: Job header with title and save button
+//   jobHeader: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'flex-start',
+//     marginBottom: 10,
+//   },
 //   jobTitle: {
 //     fontSize: 18,
 //     fontWeight: 'bold',
-//     marginBottom: 10,
 //     color: '#333',
+//     flex: 1,
+//     marginRight: 10,
+//   },
+//   // NEW: Save button style
+//   saveButton: {
+//     padding: 4,
 //   },
 //   jobInfoRow: {
 //     flexDirection: 'row',
@@ -431,7 +561,7 @@
 //     borderTopColor: '#eee',
 //   },
 //   applyButton: {
-//     backgroundColor:'#2b45b9ff',
+//     backgroundColor: '#2b45b9ff',
 //     paddingVertical: 10,
 //     paddingHorizontal: 20,
 //     borderRadius: 5,
@@ -458,10 +588,8 @@
 // });
 
 // export default JobSearch;
-
-
 // src/screens/JobSearch.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -495,7 +623,7 @@ interface DisplayJob extends NormalizedJob {
   platformName: string;
   logoUrl: string | ImageSourcePropType;
   isLocalImage: boolean;
-  isSaved?: boolean; // NEW: Track if job is saved
+  isSaved?: boolean;
 }
 
 interface Platform {
@@ -596,43 +724,44 @@ const JobSearch: React.FC = () => {
   const [whereQuery, setWhereQuery] = useState<string>('');
   const [jobType, setJobType] = useState<string>('');
   const [jobs, setJobs] = useState<DisplayJob[]>([]);
-  const [savedJobIds, setSavedJobIds] = useState<Set<string | number>>(new Set());
+  const [savedJobTitles, setSavedJobTitles] = useState<Set<string>>(new Set());
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // ✅ FIX: Use ref to track if initial load is done
+  const isInitialLoadDone = useRef<boolean>(false);
+  const savedJobTitlesRef = useRef<Set<string>>(new Set());
 
-  // NEW: Fetch saved job IDs on mount
+  // Keep ref in sync with state
   useEffect(() => {
-    if (user?.id) {
-      fetchSavedJobIds();
+    savedJobTitlesRef.current = savedJobTitles;
+  }, [savedJobTitles]);
+
+  const userName = user?.fullName || user?.firstName || 'User';
+  const userEmail = user?.primaryEmailAddress?.emailAddress || '';
+
+  // Fetch saved job titles
+  const fetchSavedJobTitles = async (): Promise<Set<string>> => {
+    if (!user?.id || !userEmail) return new Set();
+
+    try {
+      const response = await fetch(
+        `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
+      );
+      
+      if (response.ok) {
+        const savedJobs = await response.json();
+        const titles = new Set(savedJobs.map((job: any) => job.jobTitle)) as Set<string>;
+        return titles;
+      }
+    } catch (error) {
+      console.error('Error fetching saved jobs:', error);
     }
-  }, [user?.id]);
+    return new Set();
+  };
 
-const fetchSavedJobIds = async (): Promise<void> => {
-  if (!user?.id) return;
-
-  try {
-    const userEmail = user.primaryEmailAddress?.emailAddress;
-    const userName = user.fullName || user.firstName || 'User';
-
-    if (!userEmail) return;
-
-    // ✅ FIXED: Match backend route
-    const response = await fetch(
-      `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
-    );
-    
-    if (response.ok) {
-      const savedJobs = await response.json();
-      // Note: Your backend doesn't store jobId, only jobTitle
-      // You'll need to update this logic or change the backend
-      const ids = new Set(savedJobs.map((job: any) => job.jobTitle));
-      setSavedJobIds(ids as Set<string | number>);
-    }
-  } catch (error) {
-    console.error('Error fetching saved jobs:', error);
-  }
-};
-  const fetchJobs = useCallback(async (what: string, where: string): Promise<void> => {
+  // ✅ FIX: Fetch jobs function without savedJobIds dependency
+  const fetchJobs = useCallback(async (what: string, where: string, savedTitles?: Set<string>): Promise<void> => {
     if (!what.trim()) {
       setStatusMessage("Please enter what you're looking for.");
       return;
@@ -640,6 +769,9 @@ const fetchSavedJobIds = async (): Promise<void> => {
     setStatusMessage(`Fetching jobs for "${what}"...`);
     setJobs([]);
     setIsLoading(true);
+
+    // Use passed savedTitles or current ref value
+    const currentSavedTitles = savedTitles || savedJobTitlesRef.current;
 
     const fetchPromises = Object.values(platforms).map((platform: Platform) => {
       const headers = platform.getHeaders ? platform.getHeaders() : {};
@@ -651,13 +783,16 @@ const fetchSavedJobIds = async (): Promise<void> => {
         })
         .then((data: any) => {
           const jobsData = platform.getJobsFromResult(data) || [];
-          return jobsData.map((job: any): DisplayJob => ({
-            ...platform.normalizeFunction(job),
-            platformName: platform.name,
-            logoUrl: platform.logoUrl,
-            isLocalImage: platform.isLocalImage || false,
-            isSaved: savedJobIds.has(platform.normalizeFunction(job).id), // Check if saved
-          }));
+          return jobsData.map((job: any): DisplayJob => {
+            const normalizedJob = platform.normalizeFunction(job);
+            return {
+              ...normalizedJob,
+              platformName: platform.name,
+              logoUrl: platform.logoUrl,
+              isLocalImage: platform.isLocalImage || false,
+              isSaved: currentSavedTitles.has(normalizedJob.title),
+            };
+          });
         })
         .catch((error: Error) => {
           console.error(`Error with ${platform.name}:`, error);
@@ -677,13 +812,25 @@ const fetchSavedJobIds = async (): Promise<void> => {
       setJobs(shuffledJobs);
       setStatusMessage(`Showing ${shuffledJobs.length} combined results...`);
     }
-  }, [savedJobIds]);
+  }, []);
 
+  // ✅ FIX: Initial load - only runs once
   useEffect(() => {
-    if (savedJobIds.size >= 0) {
-      fetchJobs('developer', 'remote');
-    }
-  }, [savedJobIds]);
+    const initializeData = async () => {
+      if (isInitialLoadDone.current) return;
+      isInitialLoadDone.current = true;
+
+      // First fetch saved jobs
+      const savedTitles = await fetchSavedJobTitles();
+      setSavedJobTitles(savedTitles);
+      savedJobTitlesRef.current = savedTitles;
+
+      // Then fetch jobs with the saved titles
+      await fetchJobs('developer', 'remote', savedTitles);
+    };
+
+    initializeData();
+  }, [user?.id, fetchJobs]);
 
   const handleSearchSubmit = (): void => {
     const finalSearchTerm = jobType ? `${jobType} ${whatQuery}` : whatQuery;
@@ -698,77 +845,75 @@ const fetchSavedJobIds = async (): Promise<void> => {
     }
   };
 
-const handleToggleSave = async (job: DisplayJob): Promise<void> => {
-  if (!user?.id) {
-    Alert.alert('Login Required', 'Please login to save jobs');
-    return;
-  }
-
-  // Get user email from Clerk
-  const userEmail = user.primaryEmailAddress?.emailAddress;
-  const userName = user.fullName || user.firstName || 'User';
-
-  if (!userEmail) {
-    Alert.alert('Error', 'User email not found');
-    return;
-  }
-
-  const isSaved = savedJobIds.has(job.id);
-  const method = isSaved ? 'DELETE' : 'POST';
-  
-  // ✅ FIXED: Match backend endpoint structure
-  const endpoint = isSaved 
-    ? `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
-    : `${API_URL}/favorites`;
-
-  try {
-    const response = await fetch(endpoint, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // ✅ FIXED: Send fields that backend expects
-      body: method === 'POST' ? JSON.stringify({
-        name: userName,
-        email: userEmail,
-        jobTitle: job.title, // Backend expects 'jobTitle' not 'title'
-      }) : undefined,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server error: ${response.status} - ${errorText}`);
+  // ✅ FIX: Toggle save without triggering reload
+  const handleToggleSave = async (job: DisplayJob): Promise<void> => {
+    if (!user?.id) {
+      Alert.alert('Login Required', 'Please login to save jobs');
+      return;
     }
 
-    const newSavedIds = new Set(savedJobIds);
-    if (isSaved) {
-      newSavedIds.delete(job.id);
-    } else {
-      newSavedIds.add(job.id);
+    if (!userEmail) {
+      Alert.alert('Error', 'User email not found');
+      return;
     }
-    setSavedJobIds(newSavedIds);
 
-    setJobs(prevJobs =>
-      prevJobs.map(j =>
-        j.id === job.id ? { ...j, isSaved: !isSaved } : j
-      )
-    );
+    const isSaved = savedJobTitles.has(job.title);
+    const method = isSaved ? 'DELETE' : 'POST';
+    
+    const endpoint = isSaved 
+      ? `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
+      : `${API_URL}/favorites`;
 
-    Alert.alert(
-      'Success',
-      isSaved ? 'Job removed from saved' : 'Job saved successfully'
-    );
-  } catch (error) {
-    console.error('Error toggling save:', error);
-    Alert.alert('Error', `Failed to save job: ${error}`);
-  }
-};
+    try {
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: method === 'POST' ? JSON.stringify({
+          name: userName,
+          email: userEmail,
+          jobTitle: job.title,
+        }) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
+      }
+
+      // ✅ Update saved titles
+      const newSavedTitles = new Set(savedJobTitles);
+      if (isSaved) {
+        newSavedTitles.delete(job.title);
+      } else {
+        newSavedTitles.add(job.title);
+      }
+      setSavedJobTitles(newSavedTitles);
+      savedJobTitlesRef.current = newSavedTitles;
+
+      // ✅ Update only the specific job's isSaved status (no full reload)
+      setJobs(prevJobs =>
+        prevJobs.map(j =>
+          j.id === job.id ? { ...j, isSaved: !isSaved } : j
+        )
+      );
+
+      Alert.alert(
+        'Success',
+        isSaved ? 'Job removed from saved' : 'Job saved successfully'
+      );
+    } catch (error) {
+      console.error('Error toggling save:', error);
+      Alert.alert('Error', 'Failed to save job. Please try again.');
+    }
+  };
+
   const renderJobItem: ListRenderItem<DisplayJob> = ({ item: job }) => (
     <View style={styles.jobCard}>
       <View style={styles.jobContent}>
         <View style={styles.jobHeader}>
           <Text style={styles.jobTitle}>{job.title}</Text>
-          {/* NEW: Save/Unsave Button */}
           <TouchableOpacity
             onPress={() => handleToggleSave(job)}
             style={styles.saveButton}
@@ -908,10 +1053,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
     elevation: 5,
@@ -972,10 +1114,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 5,
     elevation: 3,
@@ -983,7 +1122,6 @@ const styles = StyleSheet.create({
   jobContent: {
     marginBottom: 15,
   },
-  // NEW: Job header with title and save button
   jobHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -997,7 +1135,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 10,
   },
-  // NEW: Save button style
   saveButton: {
     padding: 4,
   },

@@ -1,151 +1,13 @@
-// import { View, Text, ScrollView, FlatList, TouchableOpacity, Alert } from 'react-native'
-// import React, { useEffect, useState } from 'react'
-// import { useClerk, useUser } from '@clerk/clerk-expo'
-// import { savedStyles } from "../../assets/styles/saved.styles"
-// import LoadingSpinner from '../../components/LoadingSpinner'
-// import NoSavedJobsFound from '../../components/NoSavedJobsFound'
-// import { API_URL } from "../../constants/api"
-// import { Ionicons } from '@expo/vector-icons'
-// import JobCard from '../../components/JobCard'
 
-// const Saved = () => {
-// interface SavedJob {
-//   id: string;
-//   jobId: string;
-//   title: string;
-//   company: string;
-//   location: string;
-//   salary?: string;
-//   type?: string;
-// }
-//   const { signOut } = useClerk();
-//   const { user } = useUser();
-//   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     const loadSavedJobs = async () => {
-//       try {
-//         const response = await fetch(`${API_URL}/favorites`);
-//         if (!response.ok) {
-//           throw new Error('Failed to fetch saved jobs');
-//         }
-//         const saved = await response.json();
-        
-//         // Transform the data to match the JobCard component's expected format
-//         const transformedSaved = saved.map((job: any) => ({
-//           ...job,
-//           id: job.jobId
-//         }));
-        
-//         setSavedJobs(transformedSaved);
-//       } catch (error) {
-//         console.log('Error loading saved jobs:', error);
-//         Alert.alert('Error', 'Failed to load saved jobs');
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-    
-//     if (user?.id) {
-//       loadSavedJobs();
-//     }
-//   }, [user?.id]);
-
-//   const handleSignOut = () => {
-//     Alert.alert("Logout", "Are you sure you want to logout?", [
-//       { text: "Cancel", style: "cancel" },
-//       { text: "Logout", style: "destructive", onPress:()=> signOut() },
-//     ]);
-//   };
-
-//   const handleRemoveJob = async (jobId: string) => {
-//     Alert.alert(
-//       "Remove Job",
-//       "Are you sure you want to remove this job from saved?",
-//       [
-//         { text: "Cancel", style: "cancel" },
-//         {
-//           text: "Remove",
-//           style: "destructive",
-//           onPress: async () => {
-//             try {
-//               const response = await fetch(`${API_URL}/favorites/${user?.id}/${jobId}`, {
-//                 method: 'DELETE',
-//               });
-              
-//               if (response.ok) {
-//                 setSavedJobs(prev => prev.filter(job => job.id !== jobId));
-//               }
-//             } catch (error) {
-//               console.log('Error removing job:', error);
-//               Alert.alert('Error', 'Failed to remove job');
-//             }
-//           }
-//         },
-//       ]
-//     );
-//   };
-
-//   const refreshSavedJobs = () => {
-//     setLoading(true);
-//   };
-
-//   if (loading) {
-//     return <LoadingSpinner message="Loading your saved jobs..." />
-//   }
-
-//   return (
-//     <View style={savedStyles.container}>
-//       <ScrollView showsVerticalScrollIndicator={false}>
-//         <View style={savedStyles.header}>
-//           <View>
-//             <Text style={savedStyles.title}>Saved Jobs</Text>
-//             <Text style={savedStyles.subtitle}>
-//               {savedJobs.length} {savedJobs.length === 1 ? 'job' : 'jobs'} saved
-//             </Text>
-//           </View>
-//           <TouchableOpacity style={savedStyles.logoutButton} onPress={handleSignOut}>
-//             <Ionicons name="log-out-outline" size={22} color="#000" />
-//           </TouchableOpacity>
-//         </View>
-
-//         <View style={savedStyles.jobsSection}>
-//           <FlatList
-//             data={savedJobs}
-//             renderItem={({ item }) => (
-//               <JobCard 
-//                 job={item} 
-//                 onRemove={() => handleRemoveJob(item.id)}
-//                 isSaved={true}
-//               />
-//             )}
-//             keyExtractor={(item) => item.id.toString()}
-//             contentContainerStyle={savedStyles.jobsList}
-//             scrollEnabled={false}
-//             ListEmptyComponent={<NoSavedJobsFound />}
-//             showsVerticalScrollIndicator={false}
-//           />
-//         </View>
-//       </ScrollView>
-//     </View>
-//   )
-// }
-
-// export default Saved
-
-// app/(tabs)/saved.tsx
-import { View, Text, ScrollView, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useClerk, useUser } from '@clerk/clerk-expo';
-import { savedStyles } from "../../assets/styles/saved.styles";
 import LoadingSpinner from '../../components/LoadingSpinner';
 import NoSavedJobsFound from '../../components/NoSavedJobsFound';
 import { API_URL } from "../../constants/api";
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
-// Your backend only stores: name, email, jobTitle
 interface SavedJob {
   id?: number;
   name: string;
@@ -159,7 +21,6 @@ const Saved = () => {
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Get user info
   const userName = user?.fullName || user?.firstName || 'User';
   const userEmail = user?.primaryEmailAddress?.emailAddress || '';
 
@@ -180,8 +41,6 @@ const Saved = () => {
       }
       
       const saved = await response.json();
-      console.log('Saved jobs from API:', saved);
-      
       setSavedJobs(saved);
     } catch (error) {
       console.log('Error loading saved jobs:', error);
@@ -195,7 +54,6 @@ const Saved = () => {
     loadSavedJobs();
   }, [loadSavedJobs]);
 
-  // Reload when tab comes into focus
   useFocusEffect(
     useCallback(() => {
       loadSavedJobs();
@@ -220,7 +78,6 @@ const Saved = () => {
           style: "destructive",
           onPress: async () => {
             try {
-              // Your backend DELETE uses name and email
               const response = await fetch(
                 `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`,
                 { method: 'DELETE' }
@@ -247,39 +104,67 @@ const Saved = () => {
   }
 
   return (
-    <View style={savedStyles.container}>
+    <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={savedStyles.header}>
+        {/* Header */}
+        <View style={styles.header}>
           <View>
-            <Text style={savedStyles.title}>Saved Jobs</Text>
-            <Text style={savedStyles.subtitle}>
+            <Text style={styles.title}>Saved Jobs</Text>
+            <Text style={styles.subtitle}>
               {savedJobs.length} {savedJobs.length === 1 ? 'job' : 'jobs'} saved
             </Text>
           </View>
-          <TouchableOpacity style={savedStyles.logoutButton} onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={22} color="#000" />
+          
+          {/* Sign Out Button with Icon and Text */}
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <Ionicons name="log-out-outline" size={18} color="#fff" />
+            <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={savedStyles.jobsSection}>
+        {/* Jobs Section */}
+        <View style={styles.jobsSection}>
           {savedJobs.length === 0 ? (
             <NoSavedJobsFound />
           ) : (
             <FlatList
               data={savedJobs}
-              renderItem={({ item }) => (
-                <View style={jobCardStyles.card}>
-                  <View style={jobCardStyles.header}>
-                    <Text style={jobCardStyles.title}>{item.jobTitle}</Text>
-                    <TouchableOpacity onPress={() => handleRemoveJob(item.jobTitle)}>
-                      <Ionicons name="bookmark" size={24} color="#2b45b9ff" />
-                    </TouchableOpacity>
+              renderItem={({ item, index }) => (
+                <View style={[styles.jobCard, index === 0 && { marginTop: 0 }]}>
+                  {/* Left Accent Bar */}
+                  <View style={styles.accentBar} />
+                  
+                  <View style={styles.jobContent}>
+                    <View style={styles.jobHeader}>
+                      {/* Job Icon */}
+                      <View style={styles.jobIconContainer}>
+                        <Ionicons name="briefcase" size={18} color="#fff" />
+                      </View>
+                      
+                      {/* Job Title */}
+                      <Text style={styles.jobTitle} numberOfLines={2}>
+                        {item.jobTitle}
+                      </Text>
+                      
+                      {/* Bookmark Button */}
+                      <TouchableOpacity 
+                        style={styles.bookmarkButton}
+                        onPress={() => handleRemoveJob(item.jobTitle)}
+                      >
+                        <Ionicons name="bookmark" size={24} color="#667eea" />
+                      </TouchableOpacity>
+                    </View>
+                    
+                    {/* Saved By Info */}
+                    <View style={styles.infoRow}>
+                      <Ionicons name="person-circle-outline" size={16} color="#888" />
+                      <Text style={styles.infoText}>Saved by: {item.name}</Text>
+                    </View>
                   </View>
-                  <Text style={jobCardStyles.info}>Saved by: {item.name}</Text>
                 </View>
               )}
               keyExtractor={(item, index) => `${item.jobTitle}-${index}`}
-              contentContainerStyle={savedStyles.jobsList}
+              contentContainerStyle={styles.jobsList}
               scrollEnabled={false}
               showsVerticalScrollIndicator={false}
             />
@@ -290,38 +175,131 @@ const Saved = () => {
   );
 };
 
-// Simple inline styles for job card (since backend only has jobTitle)
-const jobCardStyles = {
-  card: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 3,
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f4ff',
   },
+  
+  // Header Styles
   header: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
-    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 25,
+    backgroundColor: '#667eea',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   title: {
-    fontSize: 16,
-    fontWeight: 'bold' as const,
-    color: '#333',
-    flex: 1,
-    marginRight: 10,
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 4,
   },
-  info: {
+  subtitle: {
     fontSize: 14,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
   },
-};
+  
+  // Sign Out Button
+  signOutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e74c3c',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 25,
+    shadowColor: '#e74c3c',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  signOutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  
+  // Jobs Section
+  jobsSection: {
+    paddingHorizontal: 20,
+    paddingTop: 25,
+    paddingBottom: 20,
+  },
+  jobsList: {
+    paddingBottom: 20,
+  },
+  
+  // Job Card
+  jobCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginTop: 15,
+    flexDirection: 'row',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  accentBar: {
+    width: 5,
+    backgroundColor: '#667eea',
+  },
+  jobContent: {
+    flex: 1,
+    padding: 16,
+  },
+  jobHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  jobIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#667eea',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  jobTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2d3748',
+    lineHeight: 22,
+    marginRight: 8,
+  },
+  bookmarkButton: {
+    padding: 4,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#718096',
+    marginLeft: 8,
+    fontWeight: '500',
+  },
+});
 
 export default Saved;
