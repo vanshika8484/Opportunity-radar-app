@@ -17,7 +17,7 @@ export default function MockInterviewLayout() {
         name="index" 
         options={{ 
           title: 'Mock Interview',
-          headerShown: true 
+          headerShown: false 
         }} 
       />
       <Stack.Screen 
