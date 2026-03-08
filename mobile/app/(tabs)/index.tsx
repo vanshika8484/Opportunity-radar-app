@@ -1054,6 +1054,7 @@ import {
   useWindowDimensions, 
   ImageBackground,
   Alert,
+  Linking,
 } from 'react-native';
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
@@ -1062,6 +1063,11 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@clerk/clerk-expo';
 import Footer from '@/components/Footer';
+import emailjs from '@emailjs/react-native';
+
+const handleEmailPress = () => {
+  Linking.openURL('mailto:contactopportunityradar@gmail.com');
+};
 
 const Index = () => {
   const { width } = useWindowDimensions();
@@ -1078,6 +1084,7 @@ const Index = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
 
   // Static images
   const heroImages = [
@@ -1098,7 +1105,40 @@ const Index = () => {
     "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1170&h=600&fit=crop&q=80",
     "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1170&h=600&fit=crop&q=80",
   ];
+const handleSendFeedback = async () => {
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
 
+    try {
+      setSending(true);
+
+      await emailjs.send(
+        'service_epeuc5t',
+        'template_3vfkc9k',
+        {
+          user_name: name,
+          user_email: email,
+          user_message: message,
+          to_email: 'contactopportunityradar@gmail.com',
+        },
+        {
+          publicKey: 'jkShHZB8slMWfZR-4',
+        }
+      );
+
+      Alert.alert('Success', 'Thank you for your feedback!');
+      setName('');
+      setEmail('');
+      setMessage('');
+    } catch (error) {
+      console.error('Email send error:', error);
+      Alert.alert('Error', 'Failed to send feedback');
+    } finally {
+      setSending(false);
+    }
+  };
   // Rotate hero image every 30 seconds
   useEffect(() => {
     const imageInterval = setInterval(() => {
@@ -1497,11 +1537,12 @@ const Index = () => {
               </View>
               <View className="w-1/2 mb-4">
                 <Text className="text-xs font-bold text-gray-900 mb-1">EMAIL</Text>
-                <Text className="text-sm text-indigo-500">opp_ahead@gmail.com</Text>
-              </View>
-              <View className="w-1/2">
-                <Text className="text-xs font-bold text-gray-900 mb-1">PHONE</Text>
-                <Text className="text-sm text-gray-600">+91 9058135360</Text>
+                <Text 
+                  className="text-sm text-indigo-500 underline" 
+                  onPress={handleEmailPress}
+                >
+                  contactopportunityradar@gmail.com
+                </Text>
               </View>
             </View>
           </View>
@@ -1561,23 +1602,19 @@ const Index = () => {
               />
             </View>
 
-            <Pressable 
-              className="bg-indigo-600 py-3 px-6 rounded-lg flex-row items-center justify-center"
-              style={({ pressed }) => ({
-                backgroundColor: pressed ? '#4338ca' : '#4f46e5',
-              })}
-              onPress={() => {
-                console.log('Sending feedback:', { name, email, message });
-                Alert.alert('Success', 'Thank you for your feedback!');
-                setName('');
-                setEmail('');
-                setMessage('');
-              }}
-            >
-              <Text className="text-white text-lg font-medium text-center ml-2">
-                Send Message
-              </Text>
-            </Pressable>
+       <Pressable
+        className="bg-indigo-600 py-3 px-6 rounded-lg flex-row items-center justify-center"
+        style={({ pressed }) => ({
+          backgroundColor: pressed ? '#4338ca' : '#4f46e5',
+          opacity: sending ? 0.7 : 1,
+        })}
+        onPress={handleSendFeedback}
+        disabled={sending}
+      >
+        <Text className="text-white text-lg font-medium text-center ml-2">
+          {sending ? 'Sending...' : 'Send Message'}
+        </Text>
+      </Pressable>
           </View>
         </View>
       </View>
