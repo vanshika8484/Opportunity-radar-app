@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Text, View, Pressable, Linking } from "react-native";
+import { Text, View, Pressable, Linking, Image } from "react-native";
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 
 const Footer = () => {
@@ -13,10 +13,14 @@ const Footer = () => {
       <View className="px-5 py-5  mx-auto">
         {/* Logo and Title */}
         <View className="flex-row items-center justify-center">
-          <View className="h-10 w-10 bg-indigo-500 rounded-full items-center justify-center">
-            <Text className="text-white font-bold text-sm">OR</Text>
+          <View className="h-8 w-8  rounded-full items-center justify-center">
+<Image
+                source={require('../assets/images/logo.png')}
+                className="h-6 w-6 rounded-full"
+                resizeMode="contain"
+              />      
           </View>
-          <Text className="ml-3 text-xl font-bold text-indigo-200">
+          <Text className="ml-1 text-xl font-bold text-indigo-200">
             Opportunity Radar
           </Text>
         </View>
