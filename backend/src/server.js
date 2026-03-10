@@ -17,12 +17,12 @@ app.get("/api/health",(req,res)=>{
 
 app.post("/api/favorites",async(req,res)=>{
    try{
-     const {name,email,jobTitle,jobUrl}=req.body;
-    if(!name|| !email || ! jobTitle || ! jobUrl){
+     const {name,email,jobTitle,jobUrl,company, location}=req.body;
+    if(!name|| !email || ! jobTitle || ! jobUrl|| !company || ! location){
         return res.status(400).json({error:"Missing required fields"});
     };
     const newFavorite=await db.insert(favorites).values({
-        name,email,jobTitle,jobUrl}).returning();
+        name,email,jobTitle,jobUrl,company, location}).returning();
     res.status(201).json(newFavorite[0]);
 }
    
