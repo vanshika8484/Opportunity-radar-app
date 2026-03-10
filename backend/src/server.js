@@ -17,12 +17,12 @@ app.get("/api/health",(req,res)=>{
 
 app.post("/api/favorites",async(req,res)=>{
    try{
-     const {name,email,jobTitle}=req.body;
-    if(!name|| !email || ! jobTitle){
+     const {name,email,jobTitle,jobUrl}=req.body;
+    if(!name|| !email || ! jobTitle || ! jobUrl){
         return res.status(400).json({error:"Missing required fields"});
     };
     const newFavorite=await db.insert(favorites).values({
-        name,email,jobTitle}).returning();
+        name,email,jobTitle,jobUrl}).returning();
     res.status(201).json(newFavorite[0]);
 }
    
@@ -31,10 +31,10 @@ catch(error){
     res.status(500).json({error:"Failed to add favorite"});
 }
 })
- app.delete("/api/favorites/:name/:email/",async(req,res)=>{
+ app.delete("/api/favorites/:name/:email/:jobTitle",async(req,res)=>{
 try{
-    const {name,email}=req.params;
-    const deletedFavorite=await db.delete(favorites).where(and(eq(favorites.name,name),eq(favorites.email,email)));
+    const {name,email,jobTitle}=req.params;
+    const deletedFavorite=await db.delete(favorites).where(and(eq(favorites.name,name),eq(favorites.email,email),eq(favorites.jobTitle, decodeURIComponent(jobTitle))));
     res.status(200).json({message:"Favorite deleted successfully"});
 }
 catch(error){
@@ -45,7 +45,7 @@ catch(error){
 app.get("/api/favorites/:name/:email",async(req,res)=>{
     try{
         const {name,email}=req.params;
-        const userFavorites=await db.select().from(favorites).where(eq(favorites.name,name),eq(favorites.email,email));
+        const userFavorites=await db.select().from(favorites).where(and(eq(favorites.name,name),eq(favorites.email,email)));
         res.status(200).json(userFavorites);
     }
     catch(error){

@@ -860,9 +860,9 @@ const JobSearch: React.FC = () => {
     const isSaved = savedJobTitles.has(job.title);
     const method = isSaved ? 'DELETE' : 'POST';
     
-    const endpoint = isSaved 
-      ? `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`
-      : `${API_URL}/favorites`;
+    const endpoint = isSaved
+  ? `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}/${encodeURIComponent(job.title)}`
+  : `${API_URL}/favorites`;
 
     try {
       const response = await fetch(endpoint, {

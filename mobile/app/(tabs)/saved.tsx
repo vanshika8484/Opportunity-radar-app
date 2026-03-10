@@ -78,11 +78,10 @@ const Saved = () => {
           style: "destructive",
           onPress: async () => {
             try {
-              const response = await fetch(
-                `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}`,
-                { method: 'DELETE' }
-              );
-              
+            const response = await fetch(
+  `${API_URL}/favorites/${encodeURIComponent(userName)}/${encodeURIComponent(userEmail)}/${encodeURIComponent(jobTitle)}`,
+  { method: 'DELETE' }
+);
               if (response.ok) {
                 setSavedJobs(prev => prev.filter(job => job.jobTitle !== jobTitle));
                 Alert.alert('Success', 'Job removed from saved');
