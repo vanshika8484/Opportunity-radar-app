@@ -1,5 +1,5 @@
 
-import { View, Text, ScrollView, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, FlatList, TouchableOpacity, Alert, StyleSheet, Linking } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useClerk, useUser } from '@clerk/clerk-expo';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -13,6 +13,10 @@ interface SavedJob {
   name: string;
   email: string;
   jobTitle: string;
+    jobUrl?: string; 
+    company?: string; 
+  location?: string;  
+
 }
 
 const Saved = () => {
@@ -154,11 +158,33 @@ const Saved = () => {
                       </TouchableOpacity>
                     </View>
                     
-                    {/* Saved By Info */}
-                    <View style={styles.infoRow}>
-                      <Ionicons name="person-circle-outline" size={16} color="#888" />
-                      <Text style={styles.infoText}>Saved by: {item.name}</Text>
-                    </View>
+                    {item.company && (
+  <View style={styles.info} >
+          <Text style={styles.jobLabel}>Company:</Text>
+    <Text style={styles.infoText}>{item.company}</Text>
+  </View>
+)}
+{item.location && (
+  <View style={styles.info}>
+          <Text style={styles.jobLabel}>Location:</Text>
+    <Text style={styles.infoText}>{item.location}</Text>
+  </View>
+)}
+                    {item.jobUrl ? (
+  <View style={styles.infoRow}>
+    <TouchableOpacity
+    style={styles.applyButton}
+    onPress={() =>
+      Linking.openURL(item.jobUrl!).catch(err =>
+        console.error('Failed to open URL:', err)
+      )
+    }
+  >
+    <Ionicons name="open-outline" size={14} color="#fff" />
+    <Text style={styles.applyButtonText}>Apply Now</Text>
+  </TouchableOpacity>
+  </View>
+) : null}
                   </View>
                 </View>
               )}
@@ -253,6 +279,22 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
+  applyButton: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#667eea',
+  paddingHorizontal: 14,
+  paddingVertical: 8,
+  alignSelf: 'flex-start',
+  marginTop: 10,
+  borderRadius: 5,
+  gap: 6,
+},
+applyButtonText: {
+  color: '#fff',
+  fontSize: 13,
+  fontWeight: '600',
+},
   accentBar: {
     width: 5,
     backgroundColor: '#667eea',
@@ -282,16 +324,27 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginRight: 8,
   },
+    jobLabel: {
+    fontWeight: 'bold',
+    color: '#333',
+  },
   bookmarkButton: {
     padding: 4,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
+  },
+  info:{
+ flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    paddingTop: 2,
+   
   },
   infoText: {
     fontSize: 13,
