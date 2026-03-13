@@ -1536,7 +1536,7 @@ const LandingScreen: React.FC<{ onBegin: () => void }> = ({ onBegin }) => (
 
     <Text style={styles.heroTitle}>AI Mock{"\n"}Interview</Text>
     <Text style={styles.heroSubtitle}>
-      Practice with <Text style={{ color: C.primary }}>any company's questions</Text>,
+      Practice with <Text style={{ color: C.primary }}>real interview questions from leading companies</Text>,
       {" "}record answers, get detailed feedback on content, confidence & vocabulary.
     </Text>
 
