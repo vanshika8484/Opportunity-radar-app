@@ -5,7 +5,7 @@ import Header from '../../components/Header';
 import CategoryCard from '../../components/CategoryCard';
 import CategoryDetail from '../../components/CategoryDetail';
 import StatsBar from '../../components/StatsBar';
-// import ParticleBackground from '../../components/ParticleBackground';
+import ParticleBackground from '../../components/ParticleBackground';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { fetchCategories } from '../../api/mockApi';
 import { useAutoRefresh } from '../../hooks/useAutoRefresh';
@@ -41,6 +41,7 @@ function App() {
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#020617" />
       <View style={styles.app}>
+        <ParticleBackground />
 
         <Header lastRefresh={lastRefresh} countdown={countdown} onRefresh={refresh} onBack={handleBack} showBack={!!selectedCategory} />
 
