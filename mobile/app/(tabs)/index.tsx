@@ -302,7 +302,10 @@
 // //                 <Text className="text-base text-gray-600 mb-4">
 // //                   {item.desc}
 // //                 </Text>
-// //                 <Pressable className="flex-row items-center">
+// //                 <Pressable 
+// //                   className="flex-row items-center"
+// //                   onPress={() => router.push('/OpportunityRadarScreen' as any)}
+// //                 >
 // //                   <Text className="text-indigo-600 font-semibold mr-2">Read Details</Text>
 // //                   <MaterialIcons name="arrow-forward" size={16} color="#4f46e5" />
 // //                 </Pressable>
@@ -1443,7 +1446,10 @@ const handleSendFeedback = async () => {
                 <Text className="text-base text-gray-600 mb-4">
                   {item.desc}
                 </Text>
-                <Pressable className="flex-row items-center">
+                <Pressable 
+                  className="flex-row items-center"
+                  onPress={() => router.push('/OpportunityRadarScreen' as any)}
+                >
                   <Text className="text-indigo-600 font-semibold mr-2">Read Details</Text>
                   <MaterialIcons name="arrow-forward" size={16} color="#4f46e5" />
                 </Pressable>
