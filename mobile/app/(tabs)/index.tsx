@@ -1064,6 +1064,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@clerk/clerk-expo';
 import Footer from '@/components/Footer';
 import emailjs from '@emailjs/react-native';
+import ParticleBackground from '@/components/ParticleBackground';
 
 const handleEmailPress = () => {
   Linking.openURL('mailto:contactopportunityradar@gmail.com');
@@ -1185,6 +1186,7 @@ const handleSendFeedback = async () => {
       ref={scrollViewRef}
       className="flex-1 bg-slate-50"
     >
+      <ParticleBackground />
       {/* --- Header --- */}
       <View className="w-full bg-white shadow-sm">
         <View className="flex-row py-4 px-4 items-center justify-between flex-wrap">
@@ -1281,7 +1283,8 @@ const handleSendFeedback = async () => {
             visualization platform. We empower job seekers by transforming skills into 
             visual opportunities, streamlining the job search process.
           </Text>
-          <Pressable className="flex-row items-center">
+          <Pressable className="flex-row items-center"   onPress={() => router.push('/dashboard')} 
+>
             <Text className="text-indigo-400 font-semibold mr-2">Learn More</Text>
             <MaterialIcons name="arrow-forward" size={16} color="#818cf8" />
           </Pressable>
@@ -1323,7 +1326,7 @@ const handleSendFeedback = async () => {
               title: "Add Listing",
               desc: "Introduce new opportunities to the network.",
               icon: "add-circle",
-              route: "/add-listing",
+              route: "/saved",
             },
           ].map((item, index) => (
             <Pressable 
