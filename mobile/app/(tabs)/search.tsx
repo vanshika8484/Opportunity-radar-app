@@ -20,6 +20,7 @@ import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@clerk/clerk-expo';
 import { API_URL } from '../../constants/api';
+import ParticleBackground from '@/components/ParticleBackground';
 
 // --- TYPE DEFINITIONS ---
 interface NormalizedJob {
@@ -555,6 +556,7 @@ const JobSearch: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
+        <ParticleBackground />
         {/* Search Bar */}
         <View style={styles.searchBar}>
           <TextInput
@@ -625,14 +627,14 @@ const JobSearch: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#9cbbeeff',
+    backgroundColor: '#c5c5c5ff',
   },
   container: {
     flex: 1,
     padding: 20,
   },
   searchBar: {
-    backgroundColor: '#7b83f3ff',
+    backgroundColor: '#ababacff',
     padding: 20,
     borderRadius: 8,
     marginBottom: 20,
