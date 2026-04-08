@@ -1389,9 +1389,9 @@ const handleSendFeedback = async () => {
                 backgroundColor: pressed ? '#4338ca' : '#4f46e5',
                 transform: [{ translateY: pressed ? 2 : 0 }],
               })}
-              onPress={navigateToSearch}
+              onPress={() => router.push('/ats-scoring' as any)}
             >
-              <Text className="text-white font-bold text-lg">Get Started</Text>
+              <Text className="text-white font-bold text-lg">ATS Scoring</Text>
             </Pressable>
             
            {/* In your Index.tsx, update the Mock Interview button */}
